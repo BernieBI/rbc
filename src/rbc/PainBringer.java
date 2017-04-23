@@ -1,6 +1,7 @@
 package rbc;
 
 import java.awt.Color;
+import java.nio.channels.SelectableChannel;
 import java.util.ArrayList;
 
 import rbc.Enemy;
@@ -68,23 +69,23 @@ public class PainBringer extends AdvancedRobot {
 			}
 
 		}
-		
+
 		/*
-		 * sjekker om roboten holder på å krasje i veggen, og endrer kjøreretning 
+		 * sjekker om roboten holder på å krasje i veggen, og endrer
+		 * kjøreretning
 		 */
-		if(y <= 50 || y >= 550 || x <= 50 || x >= 750){
-			
-		
-			if(isChanged == 0){
-				
+		if (y <= 50 || y >= 550 || x <= 50 || x >= 750) {
+
+			if (isChanged == 0) {
+
 				moveDirection *= -1;
 				isChanged = 1;
-				System.out.println("moving" +" " + isChanged);
+				System.out.println("moving" + " " + isChanged);
 			}
-						
-		}else {
+
+		} else {
 			isChanged = 0;
-			System.out.println("outside" +" "+ y + " "+ x + " " + isChanged); 
+			System.out.println("outside" + " " + y + " " + x + " " + isChanged);
 
 		}
 
@@ -93,10 +94,13 @@ public class PainBringer extends AdvancedRobot {
 		 * eller tilbake.
 		 *
 		 */
-		setAhead(25 * moveDirection);
+		if (shortestDistance > 50) {
+			setAhead(25 * moveDirection);
+		} else {
+			gunshot();
 
+		}
 	}
-
 
 	public void target() {
 		/*
@@ -134,20 +138,17 @@ public class PainBringer extends AdvancedRobot {
 
 			if (e.getName() == name && e.getStatus() != "dead") {
 				e.setStatus("target");
-				/*
-				 * så snart roboten finner et nytt target vil den snu seg 90 - 5
-				 * grader i forhold til fienden. på denne måten kan den enklere
-				 * unngå skudd. ved å sette på - 5 hindrer jeg roboten i å kjøre
-				 * lenger å lenger unna målet
-				 */
+
 				targetBearing = e.getBearing();
+				if (shortestDistance > 50) {
 
-				setTurnRight(normalizeBearing(targetBearing + 90 - (10 * moveDirection)));
-
+					setTurnRight(normalizeBearing(targetBearing + 90 - (50 * moveDirection)));
+				} else {
+					gunshot();
+				}
 			} else if (e.getStatus() != "dead") {
 				/*
 				 * fiender som tidligere har vært target får status "alive"
-				 * igjen
 				 */
 
 				e.setStatus("alive");
@@ -211,7 +212,7 @@ public class PainBringer extends AdvancedRobot {
 				}
 			}
 		}
-		//System.out.println(Enemy.getEnemies());
+		// System.out.println(Enemy.getEnemies());
 
 	}
 
@@ -255,7 +256,6 @@ public class PainBringer extends AdvancedRobot {
 
 		while (getGunTurnRemaining() > 0) {
 			execute();
-
 		}
 
 		/*
@@ -269,30 +269,31 @@ public class PainBringer extends AdvancedRobot {
 			setFire(3);
 		}
 		if (shortestDistance >= 100 && shortestDistance <= 150) {
-			setFire(2.5);
+			setFire(2.2);
 		}
 		if (shortestDistance > 150 && shortestDistance < 250) {
-			setFire(2.5);
+			setFire(1.7);
 		}
 		if (shortestDistance > 250 && shortestDistance < 350) {
-			setFire(2);
+			setFire(1.5);
 		}
 		if (shortestDistance >= 350) {
-			setFire(1.5);
+			setFire(1);
 		}
 
 	}
 
 	/*
-	
-	 * dette skjer ved treff og hvis roboten blir truffet, men bare hvis avstanden itl veggen er stor nok.
+	 * 
+	 * dette skjer ved treff og hvis roboten blir truffet, men bare hvis
+	 * avstanden itl veggen er stor nok.
 	 */
 	public void onHitByBullet(HitByBulletEvent event) {
 		double x = getX();
 		double y = getY();
-		if(y > 50 || y < 550 || x > 50 || x < 750){
+		if (y > 50 || y < 550 || x > 50 || x < 750) {
 
-		moveDirection *= -1;
+			moveDirection *= -1;
 
 		}
 	}
@@ -307,26 +308,23 @@ public class PainBringer extends AdvancedRobot {
 	 * ved kollisjon med fiende vil den flytte seg unna 300px i den bestemte
 	 * retningen.
 	 */
-	public void onHitRobot(HitRobotEvent event) {
-
-		setTurnLeft(45 * moveDirection);
-		execute();
-		setAhead(150 * moveDirection);
-
-		while (getDistanceRemaining() > 0) {
+	public void onHitRobot(HitRobotEvent e) {
+		if (e.getEnergy() > (getEnergy() + 20)) {
+			setTurnLeft(45 * moveDirection);
 			execute();
+			setAhead(150 * moveDirection);
 		}
+
 		moveDirection *= -1;
 	}
 
 	/*
 	 * den gitte bevegelsesretningen vil endres om roboten krasjer i en vegg
 	 * eller en annen robot.
-	 */		
+	 */
 	public void onHitWall(HitWallEvent e) {
 		moveDirection *= -1;
 
 	}
-
 
 }
