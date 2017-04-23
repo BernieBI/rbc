@@ -300,8 +300,10 @@ public class PainBringer extends AdvancedRobot {
 
 	public void onBulletHit(BulletHitEvent event) {
 
-		// Jeg er klar over at oppgaven sier at jeg trenger logikk her, men jeg
-		// vil ikke at roboten skal gjøre noe.
+
+		if(shortestDistance <= 50){
+		fire(3);
+		}
 	}
 
 	/*
