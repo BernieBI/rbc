@@ -31,14 +31,15 @@ public class PainBringer extends AdvancedRobot {
 			setColors(Color.BLACK, new Color(252, 5, 29), Color.BLACK);
 
 			setAdjustRadarForRobotTurn(false);
-			moving();
-
-			target();
+			setAdjustGunForRobotTurn(true);
 
 			findEnemy();
 
-			
+			target();
+
 			gunshot();
+
+			moving();
 
 			execute();
 
@@ -58,6 +59,12 @@ public class PainBringer extends AdvancedRobot {
 
 		if (x <= 100 && y <= 100 || x >= 700 && y <= 100 || x <= 100 && y >= 500 || x >= 700 && y >= 500) {
 			setTurnLeft(45 * moveDirection);
+			execute();
+
+			while (getTurnRemaining() > 0) {
+				execute();
+			}
+
 		}
 
 		/*
@@ -78,6 +85,7 @@ public class PainBringer extends AdvancedRobot {
 
 		}
 		setAhead(movedistance * moveDirection);
+		
 	}
 
 	public void target() {
@@ -122,12 +130,9 @@ public class PainBringer extends AdvancedRobot {
 				 * grader i forhold til fienden. på denne måten kan den enklere
 				 * unngå skudd.
 				 */
-				setAdjustGunForRobotTurn(true);
 				targetBearing = e.getBearing();
 
-				setTurnRight(targetBearing + 90);
-
-				execute();
+				setTurnRight(normalizeBearing(targetBearing + 90));
 
 			} else if (e.getStatus() != "dead") {
 				/*
@@ -227,48 +232,46 @@ public class PainBringer extends AdvancedRobot {
 	}
 
 	public void gunshot() {
+		/*
+		 * Bruker normaliseringsfunksjonen for å unngå unødvendig rotering av
+		 * kanonen
+		 * 
+		 * sikteformelen "getHeading() - getGunHeading() + e.getBearing()" er
+		 * funnet på samme side.
+		 */
 
-		for (Enemy e : tempList) {
+		setTurnGunRight(normalizeBearing(getHeading() - getGunHeading() + targetBearing));
+		execute();
+		
+		while(getGunTurnRemaining() > 0){
+			execute();
 
-			if (e.getStatus() == "target") {
-
-				/*
-				 * Bruker normaliseringsfunksjonen for å unngå unødvendig
-				 * rotering av kanonen
-				 * 
-				 * sikteformelen
-				 * "getHeading() - getGunHeading() + e.getBearing()" er funnet
-				 * på samme side.
-				 */
-
-				setTurnGunRight(normalizeBearing(getHeading() - getGunHeading() + e.getBearing()));
-				execute();
-
-				/*
-				 * "ammunisjon" endres etter fiendens avstand.
-				 * 
-				 * Er fienden nærme vil sjansen for å treffe med tyngre
-				 * ammunisjon være større
-				 * 
-				 */
-				if (shortestDistance <= 100) {
-					setFire(3);
-				}
-				if (shortestDistance >= 100 && shortestDistance <= 150) {
-					setFire(2.5);
-				}
-				if (shortestDistance > 150 && shortestDistance < 250) {
-					setFire(2.5);
-				}
-				if (shortestDistance > 250 && shortestDistance < 350) {
-					setFire(2);
-				}
-				if (shortestDistance >= 350) {
-					setFire(1.5);
-				}
-			}
 		}
-
+		
+	
+		/*
+		 * "ammunisjon" endres etter fiendens avstand.
+		 * 
+		 * Er fienden nærme vil sjansen for å treffe med tyngre ammunisjon være
+		 * større
+		 * 
+		 */
+			if (shortestDistance <= 100) {
+				setFire(3);
+			}
+			if (shortestDistance >= 100 && shortestDistance <= 150) {
+				setFire(2.5);
+			}
+			if (shortestDistance > 150 && shortestDistance < 250) {
+				setFire(2.5);
+			}
+			if (shortestDistance > 250 && shortestDistance < 350) {
+				setFire(2);
+			}
+			if (shortestDistance >= 350) {
+				setFire(1.5);
+			}
+		
 	}
 
 	/*
@@ -285,8 +288,7 @@ public class PainBringer extends AdvancedRobot {
 
 	public void onBulletHit(BulletHitEvent event) {
 
-		moveDirection *= -1;
-
+		//trenger noe her !!!
 	}
 
 	/*
@@ -296,6 +298,7 @@ public class PainBringer extends AdvancedRobot {
 	public void onHitRobot(HitRobotEvent event) {
 
 		setAhead(300 * moveDirection);
+		
 		moveDirection *= -1;
 	}
 
