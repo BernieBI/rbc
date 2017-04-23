@@ -1,6 +1,8 @@
 package rbc;
 
 import java.awt.Color;
+import java.util.ArrayList;
+
 import rbc.Enemy;
 import robocode.AdvancedRobot;
 import robocode.BulletHitEvent;
@@ -17,7 +19,9 @@ public class PainBringer extends AdvancedRobot {
 	// Globale variabler for avstanden til nærmeste fiende, og kjøreretning
 
 	double shortestDistance;
+	double targetBearing;
 	private byte moveDirection = 1;
+	ArrayList<Enemy> tempList = new ArrayList();
 
 	@Override
 	public void run() {
@@ -27,13 +31,13 @@ public class PainBringer extends AdvancedRobot {
 			setColors(Color.BLACK, new Color(252, 5, 29), Color.BLACK);
 
 			setAdjustRadarForRobotTurn(false);
+			moving();
 
 			target();
 
 			findEnemy();
 
-			moving();
-
+			
 			gunshot();
 
 			execute();
@@ -82,13 +86,21 @@ public class PainBringer extends AdvancedRobot {
 		 */
 		shortestDistance = 1000;
 		String name = "";
+		tempList.clear();
 
 		for (Enemy e : Enemy.getEnemies()) {
+
+			tempList.add(e);
+
+		}
+		for (Enemy e : tempList) {
+
 			/*
 			 * sjekker avstanden til hver fiende, og om de fremdeles er i live
 			 * Den nye laveste avstanden vil hele tiden bytte ut den gamle, det
 			 * samme vil tilhørende navn på fiende
 			 */
+
 			if (e.getDistance() <= shortestDistance && e.getStatus() != "dead") {
 
 				name = e.getName();
@@ -97,14 +109,13 @@ public class PainBringer extends AdvancedRobot {
 
 			}
 		}
-
-		for (Enemy e : Enemy.getEnemies()) {
+		for (Enemy e : tempList) {
 			/*
 			 * en ny løkke finner den endelige nærmeste roboten utifra navn
 			 * Denne får status "target"
 			 */
-			if (e.getName() == name && e.getStatus() != "dead") {
 
+			if (e.getName() == name && e.getStatus() != "dead") {
 				e.setStatus("target");
 				/*
 				 * så snart roboten finner et nytt target vil den snu seg 90
@@ -112,8 +123,12 @@ public class PainBringer extends AdvancedRobot {
 				 * unngå skudd.
 				 */
 				setAdjustGunForRobotTurn(true);
-				setTurnRight(e.getBearing() + 90);
+				targetBearing = e.getBearing();
+
+				setTurnRight(targetBearing + 90);
+
 				execute();
+
 			} else if (e.getStatus() != "dead") {
 				/*
 				 * fiender som tidligere har vært target får status "alive"
@@ -121,7 +136,6 @@ public class PainBringer extends AdvancedRobot {
 				 */
 
 				e.setStatus("alive");
-
 			}
 		}
 
@@ -214,7 +228,7 @@ public class PainBringer extends AdvancedRobot {
 
 	public void gunshot() {
 
-		for (Enemy e : Enemy.getEnemies()) {
+		for (Enemy e : tempList) {
 
 			if (e.getStatus() == "target") {
 
@@ -228,6 +242,7 @@ public class PainBringer extends AdvancedRobot {
 				 */
 
 				setTurnGunRight(normalizeBearing(getHeading() - getGunHeading() + e.getBearing()));
+				execute();
 
 				/*
 				 * "ammunisjon" endres etter fiendens avstand.
@@ -251,7 +266,6 @@ public class PainBringer extends AdvancedRobot {
 				if (shortestDistance >= 350) {
 					setFire(1.5);
 				}
-
 			}
 		}
 
@@ -270,6 +284,8 @@ public class PainBringer extends AdvancedRobot {
 	}
 
 	public void onBulletHit(BulletHitEvent event) {
+
+		moveDirection *= -1;
 
 	}
 
