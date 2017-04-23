@@ -28,7 +28,7 @@ public class Enemy {
 
 	@Override
 	public String toString() {
-		return  name + " " + status + " "+distance;
+		return  name + " " + status;
 	}
 
 	public String getName() {
