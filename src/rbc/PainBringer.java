@@ -52,23 +52,11 @@ public class PainBringer extends AdvancedRobot {
 	}
 
 	private void moving() {
-		/*
-		 * henter x og y koordinatene til roboten disse brukes til å hindre at
-		 * den sitter fast i hjørnene
-		 * 
-		 */
+		
 		double x = getX();
 		double y = getY();
 
-		if (x <= 100 && y <= 100 || x >= 700 && y <= 100 || x <= 100 && y >= 500 || x >= 700 && y >= 500) {
-			setTurnLeft(45 * moveDirection);
-			execute();
-
-			while (getTurnRemaining() > 0) {
-				execute();
-			}
-
-		}
+	
 
 		/*
 		 * sjekker om roboten holder på å krasje i veggen, og endrer
