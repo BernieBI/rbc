@@ -1,25 +1,23 @@
 package rbc;
 
 import java.awt.Color;
-import java.nio.channels.SelectableChannel;
+
 import java.util.ArrayList;
 
 import rbc.Enemy;
 import robocode.AdvancedRobot;
 import robocode.BulletHitEvent;
-import robocode.Condition;
-import robocode.CustomEvent;
+
 import robocode.DeathEvent;
 import robocode.HitByBulletEvent;
 import robocode.HitRobotEvent;
-import robocode.HitWallEvent;
 import robocode.RobotDeathEvent;
 import robocode.ScannedRobotEvent;
 import robocode.RoundEndedEvent;
 
 public class PainBringer extends AdvancedRobot {
 
-	// Globale variabler for avstanden til nærmeste fiende, og kjøreretning
+	// Globale variabler for avstanden til nærmeste fiende, kjøreretning osv.
 
 	double shortestDistance;
 	double targetBearing;
@@ -40,10 +38,8 @@ public class PainBringer extends AdvancedRobot {
 			findEnemy();
 
 			target();
-
-			gunshot();
-
 			moving();
+			gunshot();
 
 			execute();
 
@@ -52,17 +48,15 @@ public class PainBringer extends AdvancedRobot {
 	}
 
 	private void moving() {
-		
+
 		double x = getX();
 		double y = getY();
-
-	
 
 		/*
 		 * sjekker om roboten holder på å krasje i veggen, og endrer
 		 * kjøreretning
 		 */
-		if (y <= 50 || y >= 550 || x <= 50 || x >= 750) {
+		if (y <= 70 || y >= 530 || x <= 70 || x >= 730) {
 
 			if (isChanged == 0) {
 
@@ -73,7 +67,6 @@ public class PainBringer extends AdvancedRobot {
 
 		} else {
 			isChanged = 0;
-			System.out.println("outside" + " " + y + " " + x + " " + isChanged);
 
 		}
 
@@ -84,10 +77,7 @@ public class PainBringer extends AdvancedRobot {
 		 */
 		if (shortestDistance > 50) {
 			setAhead(25 * moveDirection);
-		} else {
-			gunshot();
-
-		}
+		} 
 	}
 
 	public void target() {
@@ -126,11 +116,15 @@ public class PainBringer extends AdvancedRobot {
 
 			if (e.getName() == name && e.getStatus() != "dead") {
 				e.setStatus("target");
-
 				targetBearing = e.getBearing();
+				
 				if (shortestDistance > 50) {
-
+					
+					/*
+					 * sidestiller roboten slik at den kjører mot fienden i en spiral
+					 */
 					setTurnRight(normalizeBearing(targetBearing + 90 - (50 * moveDirection)));
+					
 				} else {
 					gunshot();
 				}
@@ -288,9 +282,8 @@ public class PainBringer extends AdvancedRobot {
 
 	public void onBulletHit(BulletHitEvent event) {
 
-
-		if(shortestDistance <= 50){
-		fire(3);
+		if (shortestDistance <= 50) {
+			fire(3);
 		}
 	}
 
@@ -299,10 +292,13 @@ public class PainBringer extends AdvancedRobot {
 	 * retningen.
 	 */
 	public void onHitRobot(HitRobotEvent e) {
-		if (e.getEnergy() > (getEnergy() + 20)) {
+		if (e.getEnergy() > (getEnergy() + 10)) {
 			setTurnLeft(45 * moveDirection);
 			execute();
 			setAhead(150 * moveDirection);
+			execute();
+		}else{
+			gunshot();
 		}
 
 		moveDirection *= -1;
@@ -312,9 +308,6 @@ public class PainBringer extends AdvancedRobot {
 	 * den gitte bevegelsesretningen vil endres om roboten krasjer i en vegg
 	 * eller en annen robot.
 	 */
-	public void onHitWall(HitWallEvent e) {
-		moveDirection *= -1;
-
-	}
+	
 
 }
